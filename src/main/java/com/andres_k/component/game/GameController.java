@@ -3,6 +3,7 @@ package com.andres_k.component.game;
 import com.andres_k.component.network.networkSend.MessageModel;
 import com.andres_k.component.network.networkSend.messageServer.*;
 import com.andres_k.utils.Console;
+import com.andres_k.utils.RandomTools;
 import com.esotericsoftware.kryonet.Connection;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class GameController {
     // GAME
 
     public void launchGame() {
-        this.sendToAll(new MessageGameLaunch());
+        this.sendTaskToAll(new MessageGameLaunch());
     }
     // TASK
 
@@ -35,7 +36,7 @@ public class GameController {
             this.doConnection(c, (MessageConnect) received);
         } else if (received instanceof MessageDisconnect) {
             this.doDisconnect(c, (MessageDisconnect) received);
-        } else if (received instanceof MessageStatePlayer || received instanceof MessageActionPlayer) {
+        } else if (received instanceof MessageStatePlayer || received instanceof MessageActionPlayer || received instanceof MessageMoveDirection) {
             this.sendTaskToAllExcept(c, received);
         }
     }
@@ -45,8 +46,20 @@ public class GameController {
         this.sendAllPlayersTo(c);
         if (this.players.size() < this.maxPlayer) {
             this.removeObserver(c);
-            this.players.add(new Player(task.getId(), task.getPseudo(), task.getPlayerType(), c));
-            this.sendTaskToAllExcept(c, new MessageNewPlayer(task.getPseudo(), task.getId(), task.getPlayerType()));
+
+            int sizeX = 1900 / this.maxPlayer;
+            int posX = 0;
+
+            if (!this.players.isEmpty()) {
+                posX = sizeX * (this.players.size() - 1);
+            }
+            int randomX = RandomTools.getInt(sizeX - 100) + posX + 50;
+            Console.write("sizeX: " + sizeX + " , posX: " + posX + " ,  randomX: " + randomX);
+            Player player = new Player(task.getId(), task.getPseudo(), task.getGameId(), task.getPlayerType(), c, randomX, 740);
+
+            this.players.add(player);
+
+            this.sendTaskToAll(new MessageNewPlayer(player));
             if (this.players.size() == this.maxPlayer) {
                 this.launchGame();
             }
@@ -66,21 +79,20 @@ public class GameController {
                 player.getConnection().sendTCP(task);
             }
         }
-//        this.players.stream().filter(player -> !this.checkEqualsConnection(player.getConnection(), c)).forEach(player -> player.getConnection().sendTCP(task));
     }
 
     private void sendAllPlayersTo(Connection c) {
-        this.players.forEach(player -> c.sendTCP(new MessageNewPlayer(player.getPseudo(), player.getId(), player.getPlayerType())));
+        this.players.forEach(player -> c.sendTCP(new MessageNewPlayer(player)));
     }
 
-    private void sendToAll(MessageModel task) {
+    private void sendTaskToAll(MessageModel task) {
         this.players.forEach(player -> player.getConnection().sendTCP(task));
     }
 
     // MANAGE
     public void addConnection(Connection c) {
         if (this.observers.stream().noneMatch(item -> this.checkEqualsConnection(item, c))) {
-            Console.write("New connection: " + c.getRemoteAddressTCP().getHostString());
+            Console.write("New connection: " + c);
             this.observers.add(c);
         }
     }
@@ -89,14 +101,14 @@ public class GameController {
         Console.write("Disconnected: " + c);
         for (int i = 0; i < this.players.size(); ++i) {
             if (this.checkEqualsConnection(this.players.get(i).getConnection(), c)) {
-                Console.write("DeletePlayer: " + c.getRemoteAddressTCP().getHostString());
+                Console.write("DeletePlayer: " + c);
                 this.players.remove(i);
                 return true;
             }
         }
         for (int i = 0; i < this.observers.size(); ++i) {
             if (this.checkEqualsConnection(this.observers.get(i), c)) {
-                Console.write("DeleteObserver: " + c.getRemoteAddressTCP().getHostString());
+                Console.write("DeleteObserver: " + c);
                 this.observers.remove(i);
                 return true;
             }
