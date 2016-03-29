@@ -50,8 +50,8 @@ public class GameController {
             int sizeX = 1900 / this.maxPlayer;
             int posX = 0;
 
-            if (!this.players.isEmpty()) {
-                posX = sizeX * (this.players.size() - 1);
+            for (int i = 0; i < this.players.size(); ++i) {
+                posX += sizeX;
             }
             int randomX = RandomTools.getInt(sizeX - 100) + posX + 50;
             Console.write("sizeX: " + sizeX + " , posX: " + posX + " ,  randomX: " + randomX);
