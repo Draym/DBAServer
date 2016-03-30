@@ -1,8 +1,8 @@
 package com.andres_k.component.network.networkSend;
 
 
-import com.andres_k.component.game.EDirection;
 import com.andres_k.component.game.actions.EAnimation;
+import com.andres_k.component.game.input.EInput;
 import com.andres_k.component.network.networkSend.messageServer.*;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
@@ -22,8 +22,10 @@ public class NetworkRegister {
         kryo.register(MessageNewPlayer.class);
         kryo.register(MessageDeletePlayer.class);
         kryo.register(MessageGameLaunch.class);
-        kryo.register(MessageMoveDirection.class);
+        kryo.register(MessageGameEnd.class);
+        kryo.register(MessageInputPlayer.class);
+        kryo.register(MessageGameEnd.class);
         kryo.register(EAnimation.class);
-        kryo.register(EDirection.class);
+        kryo.register(EInput.class);
     }
 }

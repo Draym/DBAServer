@@ -36,7 +36,10 @@ public class GameController {
             this.doConnection(c, (MessageConnect) received);
         } else if (received instanceof MessageDisconnect) {
             this.doDisconnect(c, (MessageDisconnect) received);
-        } else if (received instanceof MessageStatePlayer || received instanceof MessageActionPlayer || received instanceof MessageMoveDirection) {
+        } else if (received instanceof MessageStatePlayer
+                || received instanceof MessageActionPlayer
+                || received instanceof MessageInputPlayer
+                || received instanceof MessageGameEnd) {
             this.sendTaskToAllExcept(c, received);
         }
     }
@@ -47,14 +50,13 @@ public class GameController {
         if (this.players.size() < this.maxPlayer) {
             this.removeObserver(c);
 
-            int sizeX = 1900 / this.maxPlayer;
-            int posX = 0;
+            int sizeX = 1700 / this.maxPlayer;
+            int posX = 200;
 
             for (int i = 0; i < this.players.size(); ++i) {
                 posX += sizeX;
             }
             int randomX = RandomTools.getInt(sizeX - 100) + posX + 50;
-            Console.write("sizeX: " + sizeX + " , posX: " + posX + " ,  randomX: " + randomX);
             Player player = new Player(task.getId(), task.getPseudo(), task.getGameId(), task.getPlayerType(), c, randomX, 740);
 
             this.players.add(player);
@@ -82,10 +84,12 @@ public class GameController {
     }
 
     private void sendAllPlayersTo(Connection c) {
+        Console.write("send all player to " + c);
         this.players.forEach(player -> c.sendTCP(new MessageNewPlayer(player)));
     }
 
     private void sendTaskToAll(MessageModel task) {
+        Console.write("send to all: " + task);
         this.players.forEach(player -> player.getConnection().sendTCP(task));
     }
 
