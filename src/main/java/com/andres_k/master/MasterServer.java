@@ -14,7 +14,7 @@ public class MasterServer {
     private boolean isRunning;
 
     public MasterServer() {
-        this.game = new GameController(3);
+        this.game = new GameController(2);
         this.network = new NetworkController(game);
         this.isRunning = true;
     }
